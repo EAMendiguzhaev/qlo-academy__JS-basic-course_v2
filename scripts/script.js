@@ -1,5 +1,6 @@
 window.addEventListener('DOMContentLoaded', () => {
   const width = document.documentElement.clientWidth;
+  const btnScroll = document.querySelector('a');
 
   //Timer
   const countTimer = (deadline) => {
@@ -129,7 +130,19 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   };
 
-  countTimer('20 june 2021');
+  // Кнопка скролла по середине экрана
+  btnScroll.addEventListener('click', (element) => {
+    element.preventDefault();
+
+    const blockID = btnScroll.getAttribute('href').substr(1);
+
+    document.getElementById(blockID).scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
+  });
+
+  countTimer('27 july 2021');
   toggleMenu();
   togglePopUp();
 });
