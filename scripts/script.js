@@ -77,10 +77,10 @@ window.addEventListener('DOMContentLoaded', () => {
     const links = menu.querySelectorAll('a');
 
     links.forEach((item) => {
-      item.addEventListener('click', (event) => {
-        event.preventDefault();
+      item.addEventListener('click', (evt) => {
+        evt.preventDefault();
 
-        const blockID = event.target.getAttribute('href').substr(1);
+        const blockID = evt.target.getAttribute('href').substr(1);
 
         document.getElementById(blockID).scrollIntoView({
           behavior: 'smooth',
@@ -89,13 +89,13 @@ window.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    document.addEventListener('click', (event) => {
-      let target = event.target;
+    document.addEventListener('click', (evt) => {
+      let target = evt.target;
 
       if (target.closest('.menu')) {
         menu.classList.add('active-menu');
       } else if (target.closest('.close-btn')) {
-        event.preventDefault();
+        evt.preventDefault();
         menu.classList.remove('active-menu');
       } else if (target.closest('a') || !target.closest('menu')) {
         menu.classList.remove('active-menu');
@@ -151,8 +151,8 @@ window.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    popup.addEventListener('click', (event) => {
-      let target = event.target;
+    popup.addEventListener('click', (evt) => {
+      let target = evt.target;
 
       if (target.classList.contains('popup-close')) {
         popUpAnimation();
@@ -195,8 +195,8 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     };
 
-    tabHeadear.addEventListener('click', (event) => {
-      let target = event.target;
+    tabHeadear.addEventListener('click', (evt) => {
+      let target = evt.target;
       target = target.closest('.service-header-tab');
 
       if (target) {
@@ -261,9 +261,9 @@ window.addEventListener('DOMContentLoaded', () => {
       clearInterval(interval);
     };
 
-    slider.addEventListener('click', (event) => {
-      event.preventDefault();
-      let target = event.target;
+    slider.addEventListener('click', (evt) => {
+      evt.preventDefault();
+      let target = evt.target;
 
       if (!target.matches('.portfolio-btn, .dot')) {
         return;
@@ -296,14 +296,14 @@ window.addEventListener('DOMContentLoaded', () => {
       nextSlide(dot, currentSlide, 'dot-active');
     });
 
-    slider.addEventListener('mouseover', (event) => {
-      if (event.target.matches('.portfolio-btn') || event.target.matches('.dot')) {
+    slider.addEventListener('mouseover', (evt) => {
+      if (evt.target.matches('.portfolio-btn') || evt.target.matches('.dot')) {
         stopSlide();
       }
     });
 
-    slider.addEventListener('mouseout', (event) => {
-      if (event.target.matches('.portfolio-btn') || event.target.matches('.dot')) {
+    slider.addEventListener('mouseout', (evt) => {
+      if (evt.target.matches('.portfolio-btn') || evt.target.matches('.dot')) {
         startSlide(1500);
       }
     });
@@ -334,8 +334,8 @@ window.addEventListener('DOMContentLoaded', () => {
   const maskPhone = function (selector, masked = '+7 (___) ___-__-__') {
     const elems = document.querySelectorAll(selector);
 
-    const mask = function (event) {
-      const keyCode = event.keyCode;
+    const mask = function (evt) {
+      const keyCode = evt.keyCode;
       const template = masked,
         def = template.replace(/\D/g, ''),
         val = this.value.replace(/\D/g, '');
@@ -357,7 +357,7 @@ window.addEventListener('DOMContentLoaded', () => {
       if (!reg.test(this.value) || this.value.length < 5 || (keyCode > 47 && keyCode < 58)) {
         this.value = newValue;
       }
-      if (event.type === 'blur' && this.value.length < 5) {
+      if (evt.type === 'blur' && this.value.length < 5) {
         this.value = '';
       }
     };
@@ -371,8 +371,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // Валидация
   const maskInput = () => {
-    document.body.addEventListener('input', (event) => {
-      let target = event.target;
+    document.body.addEventListener('input', (evt) => {
+      let target = evt.target;
       // Числовые input
       if (
         target.placeholder === 'Общая площадь*' ||
@@ -409,8 +409,8 @@ window.addEventListener('DOMContentLoaded', () => {
       correctTel: true,
       correctMess: true,
     };
-    document.body.addEventListener('change', (event) => {
-      let target = event.target;
+    document.body.addEventListener('change', (evt) => {
+      let target = evt.target;
 
       // Показ некорректного ввода и блок submit
       const showError = (error) => {
@@ -489,10 +489,10 @@ window.addEventListener('DOMContentLoaded', () => {
         }
       }
       // валидация телефона
-      if (event.target.name === 'user_phone') {
-        event.target.value = event.target.value.replace(/^\+\d{1}\s/g, '+7 ');
+      if (evt.target.name === 'user_phone') {
+        evt.target.value = evt.target.value.replace(/^\+\d{1}\s/g, '+7 ');
         // проверка на количество цифр
-        const corrNum = event.target.value.replace(/[\s\+\(\)-]*/g, '');
+        const corrNum = evt.target.value.replace(/[\s\+\(\)-]*/g, '');
         if (corrNum.length < 11) {
           correctBase.correctTel = false;
           showError(true);
