@@ -4,6 +4,26 @@ window.addEventListener('DOMContentLoaded', () => {
   const width = document.documentElement.clientWidth;
   const btnScroll = document.querySelector('a');
 
+  // Аnimation
+  const animate = ({ duration, draw, timing }) => {
+    const start = performance.now();
+
+    requestAnimationFrame(function animate(time) {
+      let timeFraction = (time - start) / duration;
+      if (timeFraction > 1) {
+        timeFraction = 1;
+      }
+
+      const progress = timing(timeFraction);
+
+      draw(progress);
+
+      if (timeFraction < 1) {
+        requestAnimationFrame(animate);
+      }
+    });
+  };
+
   //Timer
   const countTimer = (deadline) => {
     const timerHours = document.querySelector('#timer-hours');
@@ -57,10 +77,10 @@ window.addEventListener('DOMContentLoaded', () => {
     const links = menu.querySelectorAll('a');
 
     links.forEach((item) => {
-      item.addEventListener('click', (event) => {
-        event.preventDefault();
+      item.addEventListener('click', (evt) => {
+        evt.preventDefault();
 
-        const blockID = event.target.getAttribute('href').substr(1);
+        const blockID = evt.target.getAttribute('href').substr(1);
 
         document.getElementById(blockID).scrollIntoView({
           behavior: 'smooth',
@@ -69,13 +89,13 @@ window.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    document.addEventListener('click', (event) => {
-      let target = event.target;
+    document.addEventListener('click', (evt) => {
+      let target = evt.target;
 
       if (target.closest('.menu')) {
         menu.classList.add('active-menu');
       } else if (target.closest('.close-btn')) {
-        event.preventDefault();
+        evt.preventDefault();
         menu.classList.remove('active-menu');
       } else if (target.closest('a') || !target.closest('menu')) {
         menu.classList.remove('active-menu');
@@ -131,8 +151,8 @@ window.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    popup.addEventListener('click', (event) => {
-      let target = event.target;
+    popup.addEventListener('click', (evt) => {
+      let target = evt.target;
 
       if (target.classList.contains('popup-close')) {
         popUpAnimation();
@@ -175,8 +195,8 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     };
 
-    tabHeadear.addEventListener('click', (event) => {
-      let target = event.target;
+    tabHeadear.addEventListener('click', (evt) => {
+      let target = evt.target;
       target = target.closest('.service-header-tab');
 
       if (target) {
@@ -241,9 +261,9 @@ window.addEventListener('DOMContentLoaded', () => {
       clearInterval(interval);
     };
 
-    slider.addEventListener('click', (event) => {
-      event.preventDefault();
-      let target = event.target;
+    slider.addEventListener('click', (evt) => {
+      evt.preventDefault();
+      let target = evt.target;
 
       if (!target.matches('.portfolio-btn, .dot')) {
         return;
@@ -276,14 +296,14 @@ window.addEventListener('DOMContentLoaded', () => {
       nextSlide(dot, currentSlide, 'dot-active');
     });
 
-    slider.addEventListener('mouseover', (event) => {
-      if (event.target.matches('.portfolio-btn') || event.target.matches('.dot')) {
+    slider.addEventListener('mouseover', (evt) => {
+      if (evt.target.matches('.portfolio-btn') || evt.target.matches('.dot')) {
         stopSlide();
       }
     });
 
-    slider.addEventListener('mouseout', (event) => {
-      if (event.target.matches('.portfolio-btn') || event.target.matches('.dot')) {
+    slider.addEventListener('mouseout', (evt) => {
+      if (evt.target.matches('.portfolio-btn') || evt.target.matches('.dot')) {
         startSlide(1500);
       }
     });
@@ -310,10 +330,49 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   };
 
+  // Корректировка телефона
+  const maskPhone = function (selector, masked = '+7 (___) ___-__-__') {
+    const elems = document.querySelectorAll(selector);
+
+    const mask = function (evt) {
+      const keyCode = evt.keyCode;
+      const template = masked,
+        def = template.replace(/\D/g, ''),
+        val = this.value.replace(/\D/g, '');
+      let i = 0,
+        newValue = template.replace(/[_\d]/g, function (a) {
+          return i < val.length ? val.charAt(i++) || def.charAt(i) : a;
+        });
+      i = newValue.indexOf('_');
+      if (i != -1) {
+        newValue = newValue.slice(0, i);
+      }
+      let reg = template
+        .substr(0, this.value.length)
+        .replace(/_+/g, function (a) {
+          return '\\d{1,' + a.length + '}';
+        })
+        .replace(/[+()]/g, '\\$&');
+      reg = new RegExp('^' + reg + '$');
+      if (!reg.test(this.value) || this.value.length < 5 || (keyCode > 47 && keyCode < 58)) {
+        this.value = newValue;
+      }
+      if (evt.type === 'blur' && this.value.length < 5) {
+        this.value = '';
+      }
+    };
+
+    for (const elem of elems) {
+      elem.addEventListener('input', mask);
+      elem.addEventListener('focus', mask);
+      elem.addEventListener('blur', mask);
+    }
+  };
+
   // Валидация
   const maskInput = () => {
-    document.body.addEventListener('input', (event) => {
-      let target = event.target;
+    document.body.addEventListener('input', (evt) => {
+      let target = evt.target;
       // Числовые input
       if (
         target.placeholder === 'Общая площадь*' ||
@@ -338,7 +397,7 @@ window.addEventListener('DOMContentLoaded', () => {
       // Номер телефона
       if (target.name === 'user_phone') {
         target.setAttribute('type', 'text');
-        target.value = target.value.replace(/[^0-9\-()|(\+)]/g, '');
+        maskPhone('.form-phone');
       }
     });
   };
@@ -350,8 +409,8 @@ window.addEventListener('DOMContentLoaded', () => {
       correctTel: true,
       correctMess: true,
     };
-    document.body.addEventListener('change', (event) => {
-      let target = event.target;
+    document.body.addEventListener('change', (evt) => {
+      let target = evt.target;
 
       // Показ некорректного ввода и блок submit
       const showError = (error) => {
@@ -374,7 +433,7 @@ window.addEventListener('DOMContentLoaded', () => {
       };
 
       // Корректировка пробелов др. знаков в поле Ваше сообщение
-      if (target.name === 'user_message' || target.name === 'user_name') {
+      if (target.name === 'user_message' || target.name === 'user_name' || target.name === 'user_phone') {
         const changeReg = [/\s+/gm, /-+/gm, /,+/gm, /;+/gm, /:+/gm, /\.+/gm];
         const changeSymbol = [' ', '-', ',', ';', ':', '.'];
 
@@ -421,7 +480,7 @@ window.addEventListener('DOMContentLoaded', () => {
       if (target.name === 'user_email') {
         const correctMail = /^[\w\-\.\!\~\*\']+@[\w\-\.\!\~\*\']+(\.[a-z]{2,})$/;
         if (!correctMail.test(target.value)) {
-          target.value = '';
+          // target.value = '';
           correctBase.correctMail = false;
           showError(true);
         } else {
@@ -430,10 +489,10 @@ window.addEventListener('DOMContentLoaded', () => {
         }
       }
       // валидация телефона
-      if (target.name === 'user_phone') {
-        target.value = target.value.replace(/^\+\d{1}\s/g, '+7 ');
+      if (evt.target.name === 'user_phone') {
+        evt.target.value = evt.target.value.replace(/^\+\d{1}\s/g, '+7 ');
         // проверка на количество цифр
-        const corrNum = target.value.replace(/[\s\+\(\)-]*/g, '');
+        const corrNum = evt.target.value.replace(/[\s\+\(\)-]*/g, '');
         if (corrNum.length < 11) {
           correctBase.correctTel = false;
           showError(true);
@@ -441,6 +500,62 @@ window.addEventListener('DOMContentLoaded', () => {
           correctBase.correctTel = true;
           showError(false);
         }
+      }
+    });
+  };
+
+  // Калькулятор
+  const calc = (price = 100) => {
+    const calcBlock = document.querySelector('.calc-block');
+    const calcSquare = document.querySelector('.calc-square');
+    const calcCount = document.querySelector('.calc-count');
+    const calcDay = document.querySelector('.calc-day');
+    const totalValue = document.getElementById('total');
+    let calcType = document.querySelector('.calc-type');
+
+    const countSum = () => {
+      let total = 0,
+        countValue = 1,
+        dayValue = 1;
+      const typeValue = calcType.options[calcType.selectedIndex].value,
+        squareValue = +calcSquare.value;
+
+      if (calcCount.value > 1) {
+        countValue += (calcCount.value - 1) / 10;
+      }
+      if (calcDay.value && calcDay.value < 5) {
+        dayValue *= 2;
+      } else if (calcDay.value && calcDay.value < 10) {
+        dayValue *= 1.5;
+      }
+      if (typeValue && squareValue) {
+        total = Math.round(price * typeValue * squareValue * dayValue * countValue);
+      }
+
+      // Анимация total
+      const totalAnim = () => {
+        animate({
+          duration: 700,
+          timing: (timeFraction) => {
+            return timeFraction;
+          },
+          draw: (progress) => {
+            totalValue.textContent = Math.round(total * progress);
+          },
+        });
+      };
+
+      totalAnim(total);
+      if (total === 0) {
+        calcSquare.value = '';
+        calcCount.value = '';
+        calcDay.value = '';
+      }
+    };
+
+    calcBlock.addEventListener('change', (evt) => {
+      if (evt.target.matches('select') || evt.target.matches('input')) {
+        countSum();
       }
     });
   };
@@ -453,4 +568,5 @@ window.addEventListener('DOMContentLoaded', () => {
   ourTeam();
   maskInput();
   validInput();
+  calc();
 });
