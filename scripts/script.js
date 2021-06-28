@@ -488,7 +488,7 @@ window.addEventListener('DOMContentLoaded', () => {
           showError(false);
         }
       }
-      // валидация телефона
+      // Валидация телефона
       if (evt.target.name === 'user_phone') {
         evt.target.value = evt.target.value.replace(/^\+\d{1}\s/g, '+7 ');
         // проверка на количество цифр
