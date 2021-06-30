@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
   'use strict';
-  const width = document.documentElement.clientWidth;
   const btnScroll = document.querySelector('a');
 
   // Аnimation
@@ -103,60 +102,56 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // Попап
-  const togglePopUp = () => {
-    const popup = document.querySelector('.popup');
-    const btnPopUp = document.querySelectorAll('.popup-btn');
-    const popUpContent = document.querySelector('.popup-content');
-    let animationFrame;
-    let count = 0;
-    const popUpAnimation = () => {
-      animationFrame = requestAnimationFrame(popUpAnimation);
-      count--;
-      if (popUpContent.style.left > '0%') {
-        popUpContent.style.left = count + '%';
-      } else {
-        cancelAnimationFrame(animationFrame);
-      }
+  const togglePopup = () => {
+    const popUp = document.querySelector('.popup');
+    const popupBtn = document.querySelectorAll('.popup-btn');
+    let popupContent = document.querySelector('.popup-content');
 
-      if (popUpContent.style.left === '0%') {
-        popup.style.display = 'none';
-      }
+    const popupAnim = () => {
+      animate({
+        duration: 500,
+        timing: (timeFraction) => {
+          return timeFraction;
+        },
+        draw: (progress) => {
+          const popupPosTop = popupContent.getBoundingClientRect().top;
+          const clientHeight = document.documentElement.clientHeight;
+          const stopPosTop = clientHeight / 10; //10% задано в CSS
+          const startPosPop = -100;
+          const posPopup = startPosPop + (stopPosTop - startPosPop) * progress;
+          if (popupPosTop < stopPosTop) {
+            popupContent.style.transform = `translateY(${posPopup}%)`;
+          }
+        },
+      });
     };
 
-    if (width > 768) {
-      popUpAnimation();
-    } else {
-      popup.style.display = 'none';
-    }
-
-    btnPopUp.forEach((elements) => {
-      elements.addEventListener('click', () => {
-        popup.style.display = 'block';
-
-        const popUpAnimation = () => {
-          animationFrame = requestAnimationFrame(popUpAnimation);
-          count++;
-
-          if (count < 45) {
-            popUpContent.style.left = count + '%';
-          } else {
-            cancelAnimationFrame(animationFrame);
-          }
-        };
-
-        if (width > 768) {
-          popUpAnimation();
+    popupBtn.forEach((element) => {
+      element.addEventListener('click', () => {
+        const userWidth = document.documentElement.clientWidth;
+        const popupContent = document.querySelector('.popup-content');
+        const posLeft = ((userWidth - 400) * 100) / (2 * userWidth);
+        popupContent.style.left = `${posLeft}%`;
+        if (userWidth > 768) {
+          popUp.style.display = 'block';
+          popupContent.style.transform = `translateY(-100%)`;
+          popupAnim();
+        } else {
+          popUp.style.display = 'block';
         }
       });
     });
 
-    popup.addEventListener('click', (evt) => {
+    popUp.addEventListener('click', (evt) => {
       let target = evt.target;
 
-      if (target.classList.contains('popup-close') && width > 768) {
-        popUpAnimation();
+      if (target.classList.contains('popup-close')) {
+        popUp.style.display = 'none';
       } else {
-        popup.style.display = 'none';
+        target = target.closest('.popup-content');
+        if (!target) {
+          popUp.style.display = 'none';
+        }
       }
     });
   };
@@ -615,6 +610,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       inputsForm.forEach((item) => {
         item.value = '';
+        item.style.border = 'none';
       });
     });
 
@@ -641,6 +637,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       inputsForm.forEach((item) => {
         item.value = '';
+        item.style.border = 'none';
       });
     });
 
@@ -667,13 +664,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
       inputsForm.forEach((item) => {
         item.value = '';
+        item.style.border = 'none';
       });
     });
   };
 
   countTimer('27 july 2021');
   toggleMenu();
-  togglePopUp();
+  togglePopup();
   tabs();
   slider();
   ourTeam();
