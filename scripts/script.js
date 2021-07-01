@@ -1,7 +1,5 @@
-'use strict';
-
-window.addEventListener('DOMContentLoaded', () => {
-  const width = document.documentElement.clientWidth;
+document.addEventListener('DOMContentLoaded', () => {
+  'use strict';
   const btnScroll = document.querySelector('a');
 
   // Аnimation
@@ -104,63 +102,55 @@ window.addEventListener('DOMContentLoaded', () => {
   };
 
   // Попап
-  const togglePopUp = () => {
-    const popup = document.querySelector('.popup');
-    const btnPopUp = document.querySelectorAll('.popup-btn');
-    const popUpContent = document.querySelector('.popup-content');
-    let animationFrame;
-    let count = 0;
-    const popUpAnimation = () => {
-      animationFrame = requestAnimationFrame(popUpAnimation);
-      count--;
-      if (popUpContent.style.left > '0%') {
-        popUpContent.style.left = count + '%';
-      } else {
-        cancelAnimationFrame(animationFrame);
-      }
+  const togglePopup = () => {
+    const popUp = document.querySelector('.popup');
+    const popupBtn = document.querySelectorAll('.popup-btn');
+    let popupContent = document.querySelector('.popup-content');
 
-      if (popUpContent.style.left === '0%') {
-        popup.style.display = 'none';
-      }
+    const popupAnim = () => {
+      animate({
+        duration: 500,
+        timing: (timeFraction) => {
+          return timeFraction;
+        },
+        draw: (progress) => {
+          const popupPosTop = popupContent.getBoundingClientRect().top;
+          const clientHeight = document.documentElement.clientHeight;
+          const stopPosTop = clientHeight / 10; //10% задано в CSS
+          const startPosPop = -100;
+          const posPopup = startPosPop + (stopPosTop - startPosPop) * progress;
+          if (popupPosTop < stopPosTop) {
+            popupContent.style.transform = `translateY(${posPopup}%)`;
+          }
+        },
+      });
     };
 
-    if (width > 768) {
-      popUpAnimation();
-    } else {
-      popup.style.display = 'none';
-    }
-
-    btnPopUp.forEach((elements) => {
-      elements.addEventListener('click', () => {
-        popup.style.display = 'block';
-
-        const popUpAnimation = () => {
-          animationFrame = requestAnimationFrame(popUpAnimation);
-          count++;
-
-          if (count < 38) {
-            popUpContent.style.left = count + '%';
-          } else {
-            cancelAnimationFrame(animationFrame);
-          }
-        };
-
-        if (width > 768) {
-          popUpAnimation();
+    popupBtn.forEach((element) => {
+      element.addEventListener('click', () => {
+        const userWidth = document.documentElement.clientWidth;
+        const popupContent = document.querySelector('.popup-content');
+        const posLeft = ((userWidth - 400) * 100) / (2 * userWidth);
+        popupContent.style.left = `${posLeft}%`;
+        if (userWidth > 768) {
+          popUp.style.display = 'block';
+          popupContent.style.transform = `translateY(-100%)`;
+          popupAnim();
+        } else {
+          popUp.style.display = 'block';
         }
       });
     });
 
-    popup.addEventListener('click', (evt) => {
+    popUp.addEventListener('click', (evt) => {
       let target = evt.target;
 
       if (target.classList.contains('popup-close')) {
-        popUpAnimation();
+        popUp.style.display = 'none';
       } else {
         target = target.closest('.popup-content');
-
         if (!target) {
-          popUpAnimation();
+          popUp.style.display = 'none';
         }
       }
     });
@@ -560,13 +550,133 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   };
 
+  // send-ajax-form
+  const sendForm = () => {
+    const errorMessage = 'Что-то пошло не так...';
+    const loadMessage = 'Загрузка...';
+    const successMessage = 'Спасибо! Мы скоро свяжемся с Вами!';
+    const formHeader = document.querySelector('#form1');
+    const inputsForm = document.querySelectorAll('input');
+    const formFooter = document.querySelector('#form2');
+    const formPopup = document.querySelector('#form3');
+
+    const statusMessage = document.createElement('div');
+    statusMessage.style.cssText = `font-size: 2rem;
+                                   color: white;`;
+
+    const postData = (body, cb, error) => {
+      const request = new XMLHttpRequest();
+
+      request.addEventListener('readystatechange', () => {
+        if (request.readyState !== 4) {
+          return;
+        }
+
+        if (request.status === 200) {
+          cb();
+        } else {
+          error(request.status);
+        }
+      });
+
+      request.open('POST', '../server.php');
+      request.setRequestHeader('Content-Type', 'application/json');
+      request.send(JSON.stringify(body));
+    };
+
+    formHeader.addEventListener('submit', (evt) => {
+      evt.preventDefault();
+      formHeader.append(statusMessage);
+      statusMessage.textContent = loadMessage;
+      const formData = new FormData(formHeader);
+      let body = {};
+
+      formData.forEach((value, key) => {
+        body[key] = value;
+        // for (let value of formData.entries()) {
+        //   console.log(value);
+        //   body[value[0]] = value[0]
+        // } // либо так
+      });
+      postData(
+        body,
+        () => {
+          statusMessage.textContent = successMessage;
+        },
+        () => {
+          statusMessage.textContent = errorMessage;
+        },
+      );
+
+      inputsForm.forEach((item) => {
+        item.value = '';
+        item.style.border = 'none';
+      });
+    });
+
+    formFooter.addEventListener('submit', (evt) => {
+      evt.preventDefault();
+      formFooter.append(statusMessage);
+      statusMessage.textContent = loadMessage;
+      const formData = new FormData(formFooter);
+      let body = {};
+
+      formData.forEach((value, key) => {
+        body[key] = value;
+      });
+
+      postData(
+        body,
+        () => {
+          statusMessage.textContent = successMessage;
+        },
+        () => {
+          statusMessage.textContent = errorMessage;
+        },
+      );
+
+      inputsForm.forEach((item) => {
+        item.value = '';
+        item.style.border = 'none';
+      });
+    });
+
+    formPopup.addEventListener('submit', (evt) => {
+      evt.preventDefault();
+      formPopup.append(statusMessage);
+      statusMessage.textContent = loadMessage;
+      const formData = new FormData(formPopup);
+      let body = {};
+
+      formData.forEach((value, key) => {
+        body[key] = value;
+      });
+
+      postData(
+        body,
+        () => {
+          statusMessage.textContent = successMessage;
+        },
+        () => {
+          statusMessage.textContent = errorMessage;
+        },
+      );
+
+      inputsForm.forEach((item) => {
+        item.value = '';
+        item.style.border = 'none';
+      });
+    });
+  };
+
   countTimer('27 july 2021');
   toggleMenu();
-  togglePopUp();
+  togglePopup();
   tabs();
   slider();
   ourTeam();
   maskInput();
   validInput();
   calc();
+  sendForm();
 });
