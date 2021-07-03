@@ -551,6 +551,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // send-ajax-form
+  // send-ajax-form
   const sendForm = () => {
     const errorMessage = 'Что-то пошло не так...';
     const loadMessage = 'Загрузка...';
@@ -564,14 +565,25 @@ document.addEventListener('DOMContentLoaded', () => {
     statusMessage.style.cssText = `font-size: 2rem;
                                    color: white;`;
 
-    const postData = (formData) => {
-      return fetch('../server.php', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: formData,
-        credentials: 'include',
+    const postData = (body) => {
+      return new Promise((resolve, reject) => {
+        const request = new XMLHttpRequest();
+
+        request.addEventListener('readystatechange', () => {
+          if (request.readyState !== 4) {
+            return;
+          }
+
+          if (request.status === 200) {
+            resolve();
+          } else {
+            reject(request.status);
+          }
+        });
+
+        request.open('POST', '../server.php');
+        request.setRequestHeader('Content-Type', 'application/json');
+        request.send(JSON.stringify(body));
       });
     };
 
@@ -580,17 +592,18 @@ document.addEventListener('DOMContentLoaded', () => {
       formHeader.append(statusMessage);
       statusMessage.textContent = loadMessage;
       const formData = new FormData(formHeader);
+      let body = {};
 
-      postData(formData)
-        .then((response) => {
-          if (response.status !== 200) {
-            throw new Error('Status Network not 200');
-          }
+      formData.forEach((value, key) => {
+        body[key] = value;
+      });
+
+      postData(body)
+        .then(() => {
           statusMessage.textContent = successMessage;
         })
-        .catch((error) => {
+        .catch(() => {
           statusMessage.textContent = errorMessage;
-          console.error(error);
         });
 
       inputsForm.forEach((item) => {
@@ -604,17 +617,18 @@ document.addEventListener('DOMContentLoaded', () => {
       formFooter.append(statusMessage);
       statusMessage.textContent = loadMessage;
       const formData = new FormData(formFooter);
+      let body = {};
 
-      postData(formData)
-        .then((response) => {
-          if (response.status !== 200) {
-            throw new Error('Status Network not 200');
-          }
+      formData.forEach((value, key) => {
+        body[key] = value;
+      });
+
+      postData(body)
+        .then(() => {
           statusMessage.textContent = successMessage;
         })
-        .catch((error) => {
+        .catch(() => {
           statusMessage.textContent = errorMessage;
-          console.error(error);
         });
 
       inputsForm.forEach((item) => {
@@ -628,17 +642,18 @@ document.addEventListener('DOMContentLoaded', () => {
       formPopup.append(statusMessage);
       statusMessage.textContent = loadMessage;
       const formData = new FormData(formPopup);
+      let body = {};
 
-      postData(formData)
-        .then((response) => {
-          if (response.status !== 200) {
-            throw new Error('Status Network not 200');
-          }
+      formData.forEach((value, key) => {
+        body[key] = value;
+      });
+
+      postData(body)
+        .then(() => {
           statusMessage.textContent = successMessage;
         })
-        .catch((error) => {
+        .catch(() => {
           statusMessage.textContent = errorMessage;
-          console.error(error);
         });
 
       inputsForm.forEach((item) => {
