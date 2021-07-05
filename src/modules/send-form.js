@@ -12,7 +12,7 @@ const sendForm = () => {
                                    color: white;`;
 
   const postData = (formData) => {
-    return fetch('../server.php', {
+    return fetch('./server.php', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
