@@ -18,7 +18,7 @@ const countTimer = (deadline) => {
   let zeroTimer = null;
 
   const getZeroTimer = (num) => {
-    if (num > 0 && num < 10) {
+    if (num >= 0 && num < 10) {
       return '0' + num;
     } else {
       return num;
